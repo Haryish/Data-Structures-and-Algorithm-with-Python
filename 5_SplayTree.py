@@ -121,6 +121,7 @@ class SplayTree:
 
 if __name__ == '__main__':
     tree = SplayTree()
+    #Don't change the values (Suggested)
     a = TreeNode(10)
     b = TreeNode(20)
     c = TreeNode(30)

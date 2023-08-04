@@ -39,9 +39,9 @@ class WeightedGraph:
 if __name__ == "__main__":
     graph = WeightedGraph()
 
-    print("Enter the (source, destination, weight) and enter halt to finish the entry: ")
+    print("Enter the (source, destination, weight) and enter halt to finish the entry: ") 
     while True:
-        input_str = input()
+        input_str = input() #eg., (a,b,8)
         if input_str.lower() == "halt":
             break
 

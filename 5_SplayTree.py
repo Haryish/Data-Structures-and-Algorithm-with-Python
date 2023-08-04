@@ -1,6 +1,7 @@
-class Node:
-    def __init__(self, key):
-        self.key = key
+class TreeNode:
+    def __init__(self, data):
+        self.data = data
+        self.parent = None
         self.left = None
         self.right = None
 
@@ -9,88 +10,131 @@ class SplayTree:
     def __init__(self):
         self.root = None
 
-    def right_rotate(self, node):
-        y = node.left
-        node.left = y.right
-        y.right = node
-        return y
+    def leftRotate(self, x):
+        y = x.right
+        x.right = y.left
+        if y.left != None:
+            y.left.parent = x
 
-    def left_rotate(self, node):
-        y = node.right
-        node.right = y.left
-        y.left = node
-        return y
-
-    def splay(self, root, key):
-        if root is None or root.key == key:
-            return root
-
-        if key < root.key:
-            if root.left is None:
-                return root
-
-            if key < root.left.key:
-                root.left.left = self.splay(root.left.left, key)
-                root = self.right_rotate(root)
-            elif key > root.left.key:
-                root.left.right = self.splay(root.left.right, key)
-                if root.left.right:
-                    root.left = self.left_rotate(root.left)
-
-            return root.right_rotate(root) if root.left is None else self.right_rotate(root)
-
+        y.parent = x.parent
+        # x is root
+        if x.parent == None:
+            self.root = y
+        # x is left child
+        elif x == x.parent.left:
+            x.parent.left = y
+        # x is right child
         else:
-            if root.right is None:
-                return root
+            x.parent.right = y
 
-            if key < root.right.key:
-                root.right.left = self.splay(root.right.left, key)
-                if root.right.left:
-                    root.right = self.right_rotate(root.right)
-            elif key > root.right.key:
-                root.right.right = self.splay(root.right.right, key)
-                root = self.left_rotate(root)
+        y.left = x
+        x.parent = y
 
-            return root.left_rotate(root) if root.right is None else self.left_rotate(root)
+    def rightRotate(self, x):
+        y = x.left
+        x.left = y.right
+        if y.right != None:
+            y.right.parent = x
 
-    def insert(self, key):
-        if not self.root:
-            self.root = Node(key)
-            return
+        y.parent = x.parent
+        # x is root
+        if x.parent == None:
+            self.root = y
+        # x is right child
+        elif x == x.parent.right:
+            x.parent.right = y
+        # x is left child
+        else:
+            x.parent.left = y
 
-        self.root = self.splay(self.root, key)
+        y.right = x
+        x.parent = y
 
-        if key < self.root.key:
-            new_node = Node(key)
-            new_node.right = self.root
-            new_node.left = self.root.left
-            self.root.left = None
-            self.root = new_node
-        elif key > self.root.key:
-            new_node = Node(key)
-            new_node.left = self.root
-            new_node.right = self.root.right
-            self.root.right = None
-            self.root = new_node
+    def splay(self, n):
+        # node is not root
+        while n.parent != None:
+            # node is child of root, one rotation
+            if n.parent == self.root:
+                if n == n.parent.left:
+                    self.rightRotate(n.parent)
+                else:
+                    self.leftRotate(n.parent)
 
-    def display(self):
-        def print_tree(node, level=0, prefix="Root: "):
-            if node is not None:
-                print(" " * (level * 4) + prefix + str(node.key))
-                if node.left is None and node.right is None:
-                    return
-                print_tree(node.left, level + 1, "L--- ")
-                print_tree(node.right, level + 1, "R--- ")
+            else:
+                p = n.parent
+                g = p.parent  # grandparent
 
-        print_tree(self.root)
+                if n.parent.left == n and p.parent.left == p:  # both are left children
+                    self.rightRotate(g)
+                    self.rightRotate(p)
+
+                elif n.parent.right == n and p.parent.right == p:  # both are right children
+                    self.leftRotate(g)
+                    self.leftRotate(p)
+
+                elif n.parent.right == n and p.parent.left == p:
+                    self.leftRotate(p)
+                    self.rightRotate(g)
+
+                elif n.parent.left == n and p.parent.right == p:
+                    self.rightRotate(p)
+                    self.leftRotate(g)
+
+    def insert(self, n):
+        y = None
+        temp = self.root
+        while temp != None:
+            y = temp
+            if n.data < temp.data:
+                temp = temp.left
+            else:
+                temp = temp.right
+
+        n.parent = y
+
+        if y == None:  # newly added node is root
+            self.root = n
+        elif n.data < y.data:
+            y.left = n
+        else:
+            y.right = n
+
+        self.splay(n)
+
+    def bstSearch(self, n, x):
+        if x == n.data:
+            self.splay(n)
+            return n
+        elif x < n.data:
+            return self.bstSearch(n.left, x)
+        elif x > n.data:
+            return self.bstSearch(n.right, x)
+        else:
+            return None
+
+    def inOrder(self, n):
+        if n != None:
+            self.inOrder(n.left)
+            print(n.data, end=' ')
+            self.inOrder(n.right)
 
 
-# Example usage:
-splay_tree = SplayTree()
-splay_tree.insert(10)
-splay_tree.insert(5)
-splay_tree.insert(15)
-splay_tree.insert(2)
-splay_tree.insert(8)
-
-splay_tree.display()
+if __name__ == '__main__':
+    tree = SplayTree()
+    a = TreeNode(10)
+    b = TreeNode(20)
+    c = TreeNode(30)
+    d = TreeNode(100)
+    e = TreeNode(90)
+    f = TreeNode(40)
+    g = TreeNode(50)
+    tree.insert(a)
+    tree.insert(b)
+    tree.insert(c)
+    tree.insert(d)
+    tree.insert(e)
+    tree.insert(f)
+    tree.insert(g)
+    tree.bstSearch(tree.root, 90)
+    tree.inOrder(tree.root) # Displayed tree in teh inorder
+    print()
